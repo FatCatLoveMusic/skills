@@ -7,23 +7,37 @@ $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $skillsSrcDir = Join-Path $repoRoot "skills"
 $skillsDestDir = Join-Path $env:USERPROFILE ".trae-cn\skills"
 
-if (-not (Test-Path $skillsSrcDir)) {
-    Write-Host "Error: skills directory not found: $skillsSrcDir" -ForegroundColor Red
-    exit 1
-}
-
 if (-not (Test-Path $skillsDestDir)) {
     New-Item -ItemType Directory -Force -Path $skillsDestDir | Out-Null
     Write-Host "Created directory: $skillsDestDir"
+}
+
+# Link main skill entry (idea-fe-web itself)
+$mainLinkPath = Join-Path $skillsDestDir "idea-fe-web"
+if (-not (Test-Path $mainLinkPath)) {
+    try {
+        New-Item -ItemType Junction -Path $mainLinkPath -Target $repoRoot | Out-Null
+        Write-Host "[OK] idea-fe-web (main entry)" -ForegroundColor Green
+    } catch {
+        Write-Host "[FAIL] idea-fe-web - $($_.Exception.Message)" -ForegroundColor Red
+    }
+} else {
+    Write-Host "[SKIP] idea-fe-web - already linked" -ForegroundColor Yellow
+}
+
+if (-not (Test-Path $skillsSrcDir)) {
+    Write-Host "Error: skills directory not found: $skillsSrcDir" -ForegroundColor Red
+    exit 1
 }
 
 $skillDirs = Get-ChildItem -Path $skillsSrcDir -Directory
 
 Write-Host ""
 Write-Host "=== idea-fe-web skills install ===" -ForegroundColor Cyan
-Write-Host "Source: $skillsSrcDir"
+Write-Host "Main entry: $repoRoot"
+Write-Host "Sub-skills: $skillsSrcDir"
 Write-Host "Target: $skillsDestDir"
-Write-Host "Found $($skillDirs.Count) skills"
+Write-Host "Found $($skillDirs.Count) sub-skills"
 Write-Host ""
 
 $successCount = 0

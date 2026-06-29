@@ -18,8 +18,7 @@ web-framework 前端开发技能集合，为 AI 提供在 web-framework 项目�
 ### 工具与 API
 | 技能 | 描述 |
 |------|------|
-| [utils](skills/utils/SKILL.md) | `this.$utils` 公共工具方法索引（80+ 工具函数） |
-| [userinfo](skills/userinfo/SKILL.md) | 获取当前登录用户信息（`this.$getBasicInfo()`） |
+| [global-methods](skills/global-methods/SKILL.md) | 全局方法索引，包含 utils、userinfo、mixins 等 |
 
 ### 总入口
 | 技能 | 描述 |
@@ -28,51 +27,56 @@ web-framework 前端开发技能集合，为 AI 提供在 web-framework 项目�
 
 ## 安装
 
-### Windows（推荐）
+### Trae
 
 使用 PowerShell 运行安装脚本，一键创建所有技能的 Junction 链接：
 
 ```powershell
 cd idea-fe-web
-.\install.ps1
+.\install-trae.ps1
 ```
 
-脚本会将 `skills/` 目录下的所有技能链接到 `~\.trae-cn\skills\`。
+脚本会将 `idea-fe-web` 总入口和 `skills/` 目录下的所有技能链接到 `~\.trae-cn\skills\`。
 
-### 手动安装
+### Codex/Claude Code
 
-为每个技能手动创建 Junction 链接：
+使用 pi-package 格式，链接到目标项目的 `.skills/` 目录：
 
 ```powershell
-# 示例：安装 build-dev-package 技能
-New-Item -ItemType Junction -Path "$env:USERPROFILE\.trae-cn\skills\build-dev-package" -Target "path\to\idea-fe-web\skills\build-dev-package"
+cd idea-fe-web
+.\install-codex.ps1 -TargetProject "C:\Projects\my-webapp"
+```
+
+确保目标项目的 `package.json` 中包含：
+```json
+"pi": { "skills": [".skills"] }
 ```
 
 ### 安装后
 
-重启 Trae，技能即可自动加载。
+重启对应 IDE（Trae 或 Codex/Claude Code），技能即可自动加载。
 
 ## 目录结构
 
 ```
 idea-fe-web/
-├── SKILL.md              # 主技能（总入口）
-├── README.md             # 本文件
-├── install.ps1           # 安装脚本
-├── SKILL_SPEC.md         # 技能编写规范
-└── skills/               # 所有技能
+├── SKILL.md               # 主技能（总入口）
+├── README.md              # 本文件
+├── package.json           # pi-package 配置（Codex/Claude Code）
+├── install-trae.ps1       # Trae 安装脚本
+├── install-codex.ps1      # Codex/Claude Code 安装脚本
+└── skills/                # 所有子技能
     ├── build-dev-package/
     ├── dialog-template/
     ├── list-template/
-    ├── utils/
-    └── userinfo/
+    └── global-methods/
 ```
 
 ## 设计原则
 
 参照 [superpowers](https://github.com/obra/superpowers) 的技能管理方式：
 
-- **扁平化结构**：每个技能都是独立的顶级目录，AI 可以直接发现和触发
+- **多平台支持**：同时支持 Trae 的扁平技能目录和 Codex/Claude Code 的 pi-package 格式
 - **精准触发**：每个技能的 description 包含丰富的关键词，确保高命中率
 - **职责单一**：一个技能只做一件事
 - **渐进式加载**：只有触发时才加载技能内容，节省 token
@@ -82,7 +86,7 @@ idea-fe-web/
 1. 在 `skills/` 下创建新目录，目录名使用 kebab-case
 2. 创建 `SKILL.md` 文件，Frontmatter 包含 `name` 和 `description`
 3. `description` 中写满用户可能会说的触发关键词
-4. 重新运行 `install.ps1` 创建链接
+4. 重新运行对应安装脚本创建链接
 
 ## License
 

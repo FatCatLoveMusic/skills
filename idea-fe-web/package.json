@@ -1,0 +1,18 @@
+{
+  "name": "idea-fe-web",
+  "version": "1.0.0",
+  "description": "web-framework前端开发技能集合，包含组件模板、工具方法、构建部署等技能",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "skills",
+    "web-framework",
+    "vue",
+    "frontend"
+  ],
+  "pi": {
+    "skills": [
+      "./skills"
+    ]
+  }
+}
