@@ -1,53 +1,8 @@
----
-name: dialog-template
-description: web-framework弹窗模板，基于sapi-form-panel组件实现。当用户需要创建弹窗组件、编辑弹窗、详情弹窗、确认弹窗、自定义弹窗时使用此技能。包含分页表格弹窗模板，必须混入Vue.$mixins.pagerMixin。
----
-
-# dialog-template
+# 弹窗模板参考
 
 ## 描述
 
 web-framework 提供了基于 sapi-form-panel 组件的弹窗模板，用于创建各种弹窗组件（如编辑弹窗、详情弹窗等）。
-
-## 触发条件
-
-### 适用场景
-- 用户需要创建弹窗组件
-- 用户需要创建编辑弹窗
-- 用户需要创建详情弹窗
-- 用户需要基于 sapi-form-panel 实现弹窗
-
-### 不适用场景
-- 仅使用 Element UI 的 el-dialog 组件
-- 创建非弹窗类组件
-- 不需要 sapi-form-panel 功能的简单弹窗
-
-## 输入输出定义
-
-### Input
-- dialogType: string - 弹窗类型（edit/detail/custom）（可选，默认为 custom）
-- hasPager: boolean - 是否包含分页表格（可选，默认为 false）
-- title: string - 弹窗标题（可选）
-- width: string - 弹窗宽度（可选，默认为 '800px'）
-
-### Output
-- success: boolean - 操作是否成功
-- componentCode: string - 生成的弹窗组件代码
-- message: string - 操作结果描述
-
-## 执行步骤
-
-1. 确认需求：确定弹窗类型、是否需要分页、标题等参数
-2. 选择模板：根据需求选择基础模板或带分页的模板
-3. 生成代码：基于模板生成完整的 Vue 组件代码
-4. 检查规范：验证代码是否符合 web-framework 规范
-5. 返回结果：返回生成的组件代码
-
-## 失败策略
-
-- 需求不明确：询问用户具体需求（弹窗类型、功能等）
-- 模板生成失败：返回错误信息，提供基础模板示例
-- 参数错误：提示正确的参数格式和可选值
 
 ## 模板结构
 
@@ -238,6 +193,6 @@ export default {
 ## 注意事项
 
 - 弹窗中使用分页功能时，必须混入 `Vue.$mixins.pagerMixin`
-- 在列表页面中使用弹窗时，弹窗组件必须放置在 `<template slot="other">` 插槽内
+- 在列表页面中使用弹窗时，弹窗组件必须放置在 `<template slot="other">` 插槽内（详见列表模板说明）
 - 弹窗关闭时注意清理相关状态，避免下次打开时数据残留
 - 使用 `this.$emit('input', false)` 关闭弹窗，保持 v-model 双向绑定
