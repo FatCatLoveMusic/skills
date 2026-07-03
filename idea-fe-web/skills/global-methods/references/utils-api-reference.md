@@ -51,6 +51,7 @@
 | `capitalize(letter)` | 转换首字母大写 |
 | `capitalizeTypeName(type)` | 转换数据类型名称 |
 | `camelCase(name)` | 字符串转camel（驼峰）格式 |
+| `camelCaseKeys(data)` | 深度递归转换对象或数组中的属性名为驼峰命名 |
 | `amountToChinese(amount)` | 数字转换汉字大写金额 |
 | `escapeHtml(target)` | 编码字符串中的html（防XSS） |
 | `unescapeHtml(target)` | 解码字符串中的html |

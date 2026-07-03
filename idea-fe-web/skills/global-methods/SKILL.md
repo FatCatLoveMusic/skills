@@ -116,6 +116,8 @@ this.$utils.getQueryString('id');    // 获取URL参数
 this.$utils.debounce(fn, 300);       // 防抖
 this.$utils.throttle(fn, 100);       // 节流
 this.$utils.localStorage.set('key', value, true); // 存储（退出登录自动清除）
+this.$utils.camelCase('user_name');  // 字符串转驼峰：userName
+this.$utils.camelCaseKeys({ user_name: 'test', user_info: { user_age: 18 } }); // 深度递归转换对象属性名
 ```
 
 ### 页面初始化

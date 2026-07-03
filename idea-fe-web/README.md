@@ -9,16 +9,15 @@ web-framework 前端开发技能集合，为 AI 提供在 web-framework 项目�
 |------|------|
 | [build-dev-package](skills/build-dev-package/SKILL.md) | 打包 web-framework 开发包并部署到目标项目 |
 
-### 组件模板
+### 代码模板
 | 技能 | 描述 |
 |------|------|
-| [dialog-template](skills/dialog-template/SKILL.md) | 弹窗组件模板（基于 sapi-form-panel） |
-| [list-template](skills/list-template/SKILL.md) | 列表页面模板（基于 sapi-list-layout） |
+| [code-templates](skills/code-templates/SKILL.md) | Web-framework代码模板集合，包含弹窗模板、列表页面模板等 |
 
-### 工具与 API
+### 全局方法
 | 技能 | 描述 |
 |------|------|
-| [global-methods](skills/global-methods/SKILL.md) | 全局方法索引，包含 utils、userinfo、mixins 等 |
+| [global-methods](skills/global-methods/SKILL.md) | web-framework全局方法统一访问入口，包含 $utils、$getBasicInfo、HTTP请求、消息提示、跨标签页通信等 |
 
 ### 总入口
 | 技能 | 描述 |
@@ -67,8 +66,7 @@ idea-fe-web/
 ├── install-codex.ps1      # Codex/Claude Code 安装脚本
 └── skills/                # 所有子技能
     ├── build-dev-package/
-    ├── dialog-template/
-    ├── list-template/
+    ├── code-templates/
     └── global-methods/
 ```
 

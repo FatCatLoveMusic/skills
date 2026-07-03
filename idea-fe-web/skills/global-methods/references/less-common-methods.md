@@ -170,6 +170,50 @@ const token = this.$getHashParams('token');
 
 ---
 
+### this.$utils.camelCaseKeys(data)
+
+深度递归转换对象或数组中的属性名为驼峰命名。
+
+**参数说明：**
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `data` | object/array | 需要转换的数据对象或数组 |
+
+**返回值：** object/array - 转换后的数据
+
+**使用示例：**
+
+```javascript
+// 转换对象属性名
+const result = this.$utils.camelCaseKeys({
+  user_name: '张三',
+  user_info: {
+    user_age: 18,
+    user_email: 'test@example.com'
+  }
+});
+// 返回: { userName: '张三', userInfo: { userAge: 18, userEmail: 'test@example.com' } }
+
+// 转换数组中的对象属性名
+const arrResult = this.$utils.camelCaseKeys([
+  { id: 1, user_name: '张三' },
+  { id: 2, user_name: '李四' }
+]);
+// 返回: [{ id: 1, userName: '张三' }, { id: 2, userName: '李四' }]
+
+// 嵌套数组和对象
+const nestedResult = this.$utils.camelCaseKeys({
+  list_data: [
+    { item_id: 1, item_name: '商品1' },
+    { item_id: 2, item_name: '商品2' }
+  ]
+});
+// 返回: { listData: [{ itemId: 1, itemName: '商品1' }, { itemId: 2, itemName: '商品2' }] }
+```
+
+---
+
 ### this.$typeof(val)
 
 判断数据类型。

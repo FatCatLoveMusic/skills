@@ -7,20 +7,18 @@ description: web-framework前端开发技能集合总入口。当项目包含por
 
 ## 概述
 
-web-framework 前端开发技能集合，为 AI 提供在 web-framework 项目中高效开发的能力。包含组件模板、工具方法、构建部署等技能。
+web-framework 前端开发技能集合，为 AI 提供在 web-framework 项目中高效开发的能力。包含代码模板、全局方法、构建部署等技能。
 
 ## 技能索引
 
 ### 构建部署
-- **build-dev-package** - 打包 web-framework 开发包并部署到目标项目
+- **build-dev-package** - 打包 web-framework 开发包并部署到目标项目，以及打包发布 web-framework npm 包
 
-### 组件模板
-- **dialog-template** - 弹窗组件模板（基于 sapi-form-panel）
-- **list-template** - 列表页面模板（基于 sapi-list-layout）
+### 代码模板
+- **code-templates** - Web-framework代码模板集合，包含弹窗模板、列表页面模板等
 
-### 工具与API
-- **utils** - `this.$utils` 公共工具方法索引（80+ 工具函数）
-- **userinfo** - 获取当前登录用户信息（`this.$getBasicInfo()`）
+### 全局方法
+- **global-methods** - web-framework全局方法统一访问入口，包含 $utils、$getBasicInfo、HTTP请求、消息提示、跨标签页通信等
 
 ## 全局 API 服务前缀
 
@@ -55,10 +53,9 @@ web-framework 提供了以下全局接口服务前缀，这些前缀已包含 AP
 | 用户需求 | 推荐技能 |
 |---------|---------|
 | 打包/部署 web-framework 开发包 | build-dev-package |
-| 创建弹窗组件 | dialog-template |
-| 创建列表页面 | list-template |
-| 使用工具函数 | utils |
-| 获取当前用户信息 | userinfo |
+| 发布 web-framework npm 包 | build-dev-package |
+| 创建弹窗组件、列表页面、管理页面 | code-templates |
+| 使用工具函数、获取用户信息、HTTP请求、消息提示等 | global-methods |
 
 ## 注意事项
 
