@@ -394,7 +394,7 @@ Vue.$sapi_xlsxExportTool.export({
 
 ### Vue.$sapi_ai / this.$sapi_ai
 
-AI 助手工具，用于集成 AI 对话功能。
+AI 助手工具，用于集成 AI 对话功能，支持文档提取、智能填表、招标文件生成等场景。
 
 **源码位置：** `src/components/idea-ai-chat/sapi-ai.js`
 
@@ -402,71 +402,84 @@ AI 助手工具，用于集成 AI 对话功能。
 
 | 方法 | 说明 |
 |------|------|
-| `open(options)` | 打开 AI 聊天窗口 |
+| `open(options)` | 打开 AI 聊天窗口，返回聊天实例 |
 | `close()` | 关闭 AI 聊天窗口 |
-| `sendMessage(message)` | 发送消息 |
+
+**聊天实例方法：**
+
+| 方法 | 说明 |
+|------|------|
+| `on(eventName, callback)` | 监听事件（如 `updateField`） |
+| `restore(chatId)` | 恢复历史聊天会话 |
+| `send(options)` | 发送消息到 AI |
+| `close()` | 关闭聊天窗口 |
 
 ---
 
-### 打开 AI 聊天
+### open 参数说明
 
 ```javascript
-// 基础用法
 const aiChat = Vue.$sapi_ai.open({
-  title: 'AI 助手',
-  onMessage: (msg) => {
-    console.log('收到 AI 消息:', msg);
+  // === 布局相关 ===
+  layout: 'drawer-layout',           // 布局类型: 'drawer-layout' | 'document-layout'
+  width: '1000px',                   // 弹窗/抽屉宽度
+
+  // === 标识相关 ===
+  identifyType: 'document',          // 识别类型
+  identifyTitle: '智能填表',         // 弹窗/抽屉标题
+  value: true,                       // 显示控制
+
+  // === 预览组件（用于展示 AI 生成结果） ===
+  previewComponent: MyPreviewComponent,  // 预览组件
+  previewComponentProps: {              // 预览组件的 props
+    onFill: (file) => { /* 处理填入操作 */ }
   },
-  onClose: () => {
-    console.log('聊天窗口已关闭');
-  }
-});
 
-// 带初始消息
-const aiChat = Vue.$sapi_ai.open({
-  title: '代码助手',
-  initialMessage: '我可以帮你写代码、调试程序',
-  onMessage: (msg) => {
-    // 处理 AI 响应
-    this.handleAiResponse(msg);
-  }
-});
-```
+  // === 自定义事件组件（用于接收用户交互输入） ===
+  customEventComponent: MyCustomEventComponent,  // 自定义事件组件
+  customComponentProps: {                        // 传递给自定义组件的 props
+    onConfirm: (data) => { /* 处理确认回调 */ },
+    uploadFile: (file) => { /* 处理上传回调 */ }
+  },
 
----
+  // === 自定义应用列表（指定 AI 智能体） ===
+  customAppList: [
+    {
+      agentId: 'agent-uuid',          // 智能体 ID（必填，使用 $utils.guid(12) 生成）
+      agentName: '招标文件助手',       // 智能体名称
+      agentNo: '',                    // 智能体编号
+      agentType: 'bidding_doc',       // 智能体类型
+      noNeedAssistant: true           // 是否不需要助手
+    }
+  ],
 
-### 发送消息
+  // === 自定义事件处理器 ===
+  customEventHandlers: (data, context) => {
+    console.log('自定义事件处理', data, context);
+  },
 
-```javascript
-const aiChat = Vue.$sapi_ai.open({
-  onMessage: (msg) => {
-    this.messages.push(msg);
-  }
-});
-
-// 发送用户消息
-aiChat.sendMessage('帮我写一个求和函数');
-
-// 发送带上下文的消息
-aiChat.sendMessage({
-  content: '优化这段代码',
-  context: {
-    language: 'javascript',
-    code: 'function sum(a, b) { return a + b }'
-  }
+  // === 表单填充实例（用于 idea-form-fill 组件） ===
+  formFillInstance: this,            // 当前组件实例
 });
 ```
 
 ---
 
-### 在组件中使用
+### 场景一：智能填表（文档提取）
+
+用于从上传的文档中自动提取信息填充表单字段，配合 `idea-form-fill` 组件使用。
 
 ```vue
 <template>
   <div>
-    <el-button type="primary" @click="openAiAssistant">
-      打开 AI 助手
-    </el-button>
+    <idea-form-fill
+      :json-schema="formSchema"
+      agent-type="doc_extract"
+      identify-title="智能填表"
+      @confirm="onConfirm"
+    >
+      <!-- 可自定义触发的 slot -->
+    </idea-form-fill>
   </div>
 </template>
 
@@ -474,53 +487,363 @@ aiChat.sendMessage({
 export default {
   data() {
     return {
-      aiChatInstance: null
+      aiChat: null,
+      agentId: null,
+      chatId: null,
+      formSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', label: '姓名' },
+          phone: { type: 'string', label: '电话' },
+          address: { type: 'string', label: '地址' }
+        }
+      }
     }
   },
 
   methods: {
-    openAiAssistant() {
-      if (this.aiChatInstance) {
-        return;
+    smartFill() {
+      if (!this.agentId) {
+        this.agentId = this.$utils.guid(12);
       }
 
-      this.aiChatInstance = this.$sapi_ai.open({
-        title: '智能助手',
-        onMessage: (msg) => {
-          this.handleAiMessage(msg);
+      this.aiChat = Vue.$sapi_ai.open({
+        layout: 'document-layout',
+        customEventComponent: this.myCustomComponent,
+        identifyType: 'document',
+        identifyTitle: '智能填表',
+        formFillInstance: this,
+        value: true,
+        customComponentProps: {
+          onConfirm: this.onConfirm,
+          uploadFile: this.uploadFile
         },
-        onClose: () => {
-          this.aiChatInstance = null;
+        width: '1000px'
+      }).on('updateField', ({ key, value }) => {
+        if (key === 'currChatId' && value) {
+          this.chatId = value;
+        }
+      });
+
+      // 恢复历史会话
+      if (this.chatId) {
+        this.aiChat.restore(this.chatId);
+      }
+    },
+
+    onConfirm(data) {
+      // data 为 AI 提取的 JSON 数据
+      console.log('AI 提取结果:', data);
+      // 将数据填充到表单
+      Object.keys(data).forEach(key => {
+        if (this.form[key] !== undefined) {
+          this.form[key] = data[key];
         }
       });
     },
 
-    handleAiMessage(msg) {
-      console.log('AI 消息:', msg);
+    uploadFile(file) {
+      // 上传文件后触发 AI 提取
+      this.currChatId = this.$utils.guid(12);
+      this.additionalKwargs = {
+        file_path: file[0].filePath,
+        json_schema: this.formSchema,
+        enableThinking: false
+      };
+      this._sendContent();
+    }
+  },
 
-      if (msg.type === 'text') {
-        // 处理文本消息
-        this.$set(msg, 'rendered', this.parseMarkdown(msg.content));
-      } else if (msg.type === 'code') {
-        // 处理代码消息
-        this.highlightCode(msg.content);
+  beforeDestroy() {
+    if (this.aiChat) {
+      this.aiChat.close();
+      this.aiChat = null;
+    }
+  }
+}
+</script>
+```
+
+---
+
+### 场景二：AI 生成文档（如招标文件）
+
+用于 AI 生成文档并支持预览、填入等操作。
+
+```vue
+<script>
+// 预览组件：展示 AI 生成结果并提供"填入"按钮
+const DocPreview = {
+  name: 'DocPreview',
+  props: {
+    data: { type: Object, default: () => ({}) },
+    htmlContent: { type: String, default: '' },
+    onFill: { type: Function, default: null }
+  },
+  computed: {
+    iframeSrc() {
+      if (!this.data) return '';
+      let url = this.data.iframeSrc || this.data.dataPath || '';
+      return this.$utils.appendQuery({ aichat: false }, url);
+    }
+  },
+  methods: {
+    handleFill() {
+      if (typeof this.onFill === 'function') {
+        this.onFill(this.data);
+      }
+    }
+  },
+  template: `
+    <div class="doc-preview-wrap">
+      <div class="doc-preview-content">
+        <iframe
+          v-if="iframeSrc"
+          class="idea-ai-chat-preview-iframe"
+          :src="iframeSrc"
+          frameborder="0"
+        ></iframe>
+        <div v-else v-safe-html="htmlContent"></div>
+      </div>
+      <div class="doc-preview-footer">
+        <el-button type="primary" size="small" @click="handleFill">填入</el-button>
+      </div>
+    </div>
+  `
+};
+
+// 自定义事件组件：接收用户上传文件等交互
+const CustomEvent = {
+  name: 'CustomEvent',
+  props: {
+    data: { type: Object, default: () => ({}) },
+    fromHistory: { type: Boolean, default: false },
+    onConfirm: { type: Function }
+  },
+  data() {
+    return { isUploading: false };
+  },
+  methods: {
+    handleFileSelect(event) {
+      const files = event.target.files;
+      if (!files || !files.length) return;
+      this.uploadFile(files[0]);
+      event.target.value = '';
+    },
+    uploadFile(file) {
+      this.isUploading = true;
+      Vue.$sapi_uploadTool.requestUploadWithMd5(file, (res) => {
+        const uploadedFile = res.data.files[0] || null;
+        if (uploadedFile) {
+          const fileData = {
+            fileId: uploadedFile.id || '',
+            hashCode: res.data.fileMd5 || '',
+            fileName: uploadedFile.fileName || '',
+            extension: uploadedFile.extension || '',
+            filePath: uploadedFile.filePath || uploadedFile.relativePath || '',
+            fileSize: uploadedFile.fileSize || 0,
+            fileMd5: res.data.fileMd5 || ''
+          };
+          this.uploadChange([fileData]);
+        }
+        this.isUploading = false;
+      }, (err) => {
+        Vue.msg(err.message || '文件上传失败');
+        this.isUploading = false;
+      });
+    },
+    uploadChange(data) {
+      if (!(data && data.length)) return;
+      if (typeof this.onConfirm === 'function') {
+        this.onConfirm(data);
+      }
+    }
+  },
+  template: `
+    <div class="custom-event">
+      <div class="form-item">
+        <label>上传文件模板</label>
+        <el-button size="small" :loading="isUploading" @click="$refs.fileInput.click()">
+          选择文件
+        </el-button>
+        <input ref="fileInput" type="file" style="display: none;" @change="handleFileSelect" />
+      </div>
+    </div>
+  `
+};
+
+export default {
+  data() {
+    return {
+      agentId: null,
+      chatId: null,
+      aiChat: null
+    }
+  },
+
+  methods: {
+    aiGenerate() {
+      if (!this.agentId) {
+        this.agentId = this.$utils.guid(12);
+      }
+
+      this.aiChat = Vue.$sapi_ai.open({
+        layout: 'drawer-layout',
+        previewComponent: DocPreview,
+        previewComponentProps: {
+          onFill: (file) => this.handleFill(file)
+        },
+        customEventComponent: CustomEvent,
+        customComponentProps: {
+          onConfirm: (data) => this.handleUpload(data)
+        },
+        customAppList: [
+          {
+            agentId: this.agentId,
+            agentName: '文档生成助手',
+            agentNo: '',
+            agentType: 'bidding_doc',
+            noNeedAssistant: true
+          }
+        ],
+        customEventHandlers: (data, context) => {
+          console.log('customEventHandlers', data, context);
+        }
+      }).on('updateField', ({ key, value }) => {
+        if (key === 'currChatId' && value) {
+          this.chatId = value;
+        }
+      });
+
+      // 恢复历史会话
+      if (this.chatId) {
+        this.aiChat.restore(this.chatId);
+      } else {
+        // 首次打开，自动发送初始消息
+        this.aiChat.send({
+          content: '生成文档',
+          enableThinking: false,
+          additionalKwargs: {
+            field_values: this.formData
+          }
+        });
       }
     },
 
-    askAi(question) {
-      if (this.aiChatInstance) {
-        this.aiChatInstance.sendMessage(question);
+    // 用户上传文件后继续对话
+    handleUpload(data) {
+      const file = data[0] || {};
+      this.aiChat.send({
+        content: '已上传文件模板',
+        enableThinking: false,
+        displayFiles: [{
+          fileId: file.fileId || '',
+          hashCode: file.hashCode || '',
+          fileName: file.fileName || '',
+          extension: file.extension || '',
+          filePath: file.filePath || '',
+          fileSize: file.fileSize || 0
+        }],
+        additionalKwargs: {
+          file_name: file.fileName + file.extension
+        }
+      });
+    },
+
+    // 处理 AI 生成结果的填入操作
+    handleFill(file) {
+      const filePath = file && (file.filePath || file.file_path || '');
+      if (!filePath) {
+        Vue.msg('未获取到可填入的文件');
+        return;
+      }
+      // 保存文件到业务数据
+      // ...
+    }
+  },
+
+  beforeDestroy() {
+    if (this.aiChat) {
+      this.aiChat.close();
+      this.aiChat = null;
+      this.chatId = null;
+    }
+  }
+}
+</script>
+```
+
+---
+
+### send 方法参数说明
+
+```javascript
+aiChat.send({
+  content: '消息内容',                      // 消息文本
+  enableThinking: false,                    // 是否启用思考模式
+  displayFiles: [                           // 展示的文件列表
+    {
+      fileId: 'xxx',
+      fileName: '招标文件.docx',
+      extension: '.docx',
+      filePath: '/path/to/file.docx',
+      fileSize: 102400
+    }
+  ],
+  additionalKwargs: {                       // 额外参数（传递给 AI 智能体）
+    field_values: {},                       // 表单字段值
+    json_schema: {},                        // JSON Schema
+    file_name: 'xxx.docx',                  // 文件名
+    file_path: '/path/to/file.docx',        // 文件路径
+    enableThinking: false                   // 是否启用思考
+  }
+});
+```
+
+---
+
+### 生命周期管理
+
+```javascript
+// 组件中正确管理 AI 聊天实例生命周期
+export default {
+  data() {
+    return {
+      aiChat: null,
+      chatId: null
+    }
+  },
+
+  methods: {
+    openAiChat() {
+      // 生成唯一 agentId（同一实例复用）
+      if (!this.agentId) {
+        this.agentId = this.$utils.guid(12);
+      }
+
+      this.aiChat = Vue.$sapi_ai.open({ /* options */ })
+        .on('updateField', ({ key, value }) => {
+          if (key === 'currChatId' && value) {
+            this.chatId = value;
+          }
+        });
+
+      // 恢复历史会话
+      if (this.chatId) {
+        this.aiChat.restore(this.chatId);
       }
     }
   },
 
   beforeDestroy() {
-    if (this.aiChatInstance) {
-      this.aiChatInstance.close();
+    // 必须：组件销毁时关闭 AI 聊天
+    if (this.aiChat) {
+      this.aiChat.close();
+      this.aiChat = null;
+      this.chatId = null;
     }
   }
 }
-</script>
 ```
 
 ---
